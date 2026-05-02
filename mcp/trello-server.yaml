@@ -1,0 +1,18 @@
+version: 3
+name: trello-source
+displayName: Trello (custom)
+registry:
+  trello:
+    description: Trello board, list, and card management via the Trello REST API.
+    title: Trello
+    type: server
+    image: trello-mcp-server:local
+    secrets:
+      - name: trello.api_key
+        env: TRELLO_API_KEY
+        example: YOUR_TRELLO_API_KEY
+        description: Trello API key from https://trello.com/app-key
+      - name: trello.token
+        env: TRELLO_TOKEN
+        example: YOUR_TRELLO_TOKEN
+        description: Trello token (the manually-generated one, NOT the OAuth secret)

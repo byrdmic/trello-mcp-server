@@ -1,0 +1,22 @@
+# Dockerfile for stdio-mode MCP deployment (Claude Desktop / Docker MCP Toolkit gateway).
+# For SSE mode, use the default Dockerfile + docker-compose.yml instead.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml uv.lock ./
+RUN pip install --no-cache-dir uv && \
+    uv pip install --system -e .
+
+COPY . .
+
+# Force stdio (Claude app) mode. No port, no EXPOSE.
+# TRELLO_API_KEY and TRELLO_TOKEN are injected at runtime by the MCP gateway.
+ENV USE_CLAUDE_APP=true \
+    PYTHONUNBUFFERED=1
+
+CMD ["python", "main.py"]
