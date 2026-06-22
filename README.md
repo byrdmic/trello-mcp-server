@@ -113,6 +113,55 @@ docker-compose logs -f
 docker-compose down
 ```
 
+### Docker MCP Toolkit Mode (stdio gateway)
+
+Run the server as a stdio MCP container managed by [Docker Desktop's MCP Toolkit](https://docs.docker.com/ai/mcp-catalog-and-toolkit/) gateway. This is the recommended path for clients that connect through the MCP gateway (such as Claude Desktop's `MCP_DOCKER` connector) and want credentials injected from Docker Desktop's secret store at runtime — no `.env` file, no credentials baked into the image. Each tool call spawns a fresh, isolated container.
+
+This mode is additive: it does not affect the SSE / Docker Compose flow above. Two repo files support it:
+
+- `Dockerfile.stdio` — minimal image that pins `USE_CLAUDE_APP=true` and runs `python main.py` for stdio JSON-RPC. No `EXPOSE`, no port.
+- `mcp/trello-server.yaml` — Docker MCP Catalog v3 source descriptor declaring the server and naming `TRELLO_API_KEY` / `TRELLO_TOKEN` as gateway-injected secrets.
+
+Requires Docker Desktop with the MCP Toolkit feature enabled (provides the `docker mcp` CLI).
+
+1. Build the stdio image locally:
+```bash
+docker build -f Dockerfile.stdio -t trello-mcp-server:local .
+```
+2. Register the bundled catalog descriptor as a custom catalog:
+```bash
+docker mcp catalog create custom
+docker mcp catalog add custom trello mcp/trello-server.yaml
+```
+3. Store your Trello credentials in Docker Desktop's secret store. **Windows PowerShell warning**: piping a string into `docker mcp secret set` will prepend a UTF-8 BOM (`﻿`) to the stored value, which Trello rejects with `401 Unauthorized`. Use Git Bash / WSL bash:
+```bash
+printf '%s' 'YOUR_TRELLO_API_KEY' | docker mcp secret set trello.api_key
+printf '%s' 'YOUR_TRELLO_TOKEN'   | docker mcp secret set trello.token
+```
+Or, if you only have PowerShell, write the value via `[System.IO.File]::WriteAllText` with `UTF8Encoding($false)` to a temp file and redirect through `cmd /c` to bypass PowerShell's encoding layer.
+
+4. Enable the server in the gateway:
+```bash
+docker mcp server enable trello
+```
+5. Point your MCP client at the gateway with the custom catalog loaded. For Claude Desktop, edit `claude_desktop_config.json` so the `MCP_DOCKER` entry's args include `--additional-catalog custom.yaml`:
+```json
+{
+  "mcpServers": {
+    "MCP_DOCKER": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--additional-catalog", "custom.yaml"]
+    }
+  }
+}
+```
+6. Fully quit and reopen the client. Trello tools will appear under the gateway connector; the gateway spawns a fresh `trello-mcp-server:local` container per session and injects `TRELLO_API_KEY` and `TRELLO_TOKEN` from the secret store.
+
+To verify the wiring without launching a client:
+```bash
+docker mcp gateway run --additional-catalog custom.yaml --dry-run --servers trello
+```
+
 ## Configuration
 
 The server can be configured using environment variables in the `.env` file:
