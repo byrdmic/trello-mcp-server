@@ -9,6 +9,8 @@ from mcp.server.fastmcp import Context
 
 from server.models import TrelloBoard, TrelloLabel
 from server.dtos.create_label import CreateLabelPayload
+from server.dtos.create_board import CreateBoardPayload
+from server.dtos.update_board import UpdateBoardPayload
 from server.services.board import BoardService
 from server.trello import client
 
@@ -95,6 +97,101 @@ async def create_board_label(ctx: Context, board_id: str, payload: CreateLabelPa
         return result
     except Exception as e:
         error_msg = f"Failed to get board labels: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def create_board(ctx: Context, payload: CreateBoardPayload) -> TrelloBoard:
+    """Creates a new board.
+
+    Args:
+        name (str): The name of the board.
+        desc (str): The description of the board.
+        idOrganization (str): The ID of the workspace the board belongs to.
+
+    Returns:
+        TrelloBoard: The newly created board object.
+    """
+    try:
+        logger.info(f"Creating board with name: {payload.name}")
+        result = await service.create_board(**payload.model_dump(exclude_unset=True))
+        logger.info(f"Successfully created board: {payload.name}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to create board: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def update_board(
+    ctx: Context, board_id: str, payload: UpdateBoardPayload
+) -> TrelloBoard:
+    """Updates a board's attributes.
+
+    Args:
+        board_id (str): The ID of the board to update.
+        name (str): The new name of the board.
+        desc (str): The new description of the board.
+
+    Returns:
+        TrelloBoard: The updated board object.
+    """
+    try:
+        logger.info(f"Updating board: {board_id}")
+        result = await service.update_board(
+            board_id, **payload.model_dump(exclude_unset=True)
+        )
+        logger.info(f"Successfully updated board: {board_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to update board: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def close_board(ctx: Context, board_id: str) -> TrelloBoard:
+    """Closes (archives) a board. This is reversible by reopening the board.
+
+    Args:
+        board_id (str): The ID of the board to close.
+
+    Returns:
+        TrelloBoard: The closed board object.
+    """
+    try:
+        logger.info(f"Closing board: {board_id}")
+        result = await service.close_board(board_id)
+        logger.info(f"Successfully closed board: {board_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to close board: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def delete_board(ctx: Context, board_id: str) -> dict:
+    """Permanently deletes a board.
+
+    ⚠️ WARNING: This is irreversible. Deleting a board permanently removes the
+    board and all of its lists and cards. Prefer ``close_board`` to archive instead.
+
+    Args:
+        board_id (str): The ID of the board to delete.
+
+    Returns:
+        dict: The response from the delete operation.
+    """
+    try:
+        logger.info(f"Deleting board: {board_id}")
+        result = await service.delete_board(board_id)
+        logger.info(f"Successfully deleted board: {board_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to delete board: {str(e)}"
         logger.error(error_msg)
         await ctx.error(error_msg)
         raise

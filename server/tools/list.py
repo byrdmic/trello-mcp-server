@@ -3,7 +3,7 @@ This module contains tools for managing Trello lists.
 """
 
 import logging
-from typing import List
+from typing import Dict, List
 
 from mcp.server.fastmcp import Context
 
@@ -122,6 +122,77 @@ async def delete_list(ctx: Context, list_id: str) -> TrelloList:
         return result
     except Exception as e:
         error_msg = f"Failed to delete list: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def move_list(
+    ctx: Context, list_id: str, board_id: str | None = None, pos: str | None = None
+) -> TrelloList:
+    """Moves a list to another board and/or changes its position.
+
+    Args:
+        list_id (str): The ID of the list to move.
+        board_id (str | None): The ID of the destination board (optional).
+        pos (str | None): The new position ("top", "bottom", or a number) (optional).
+
+    Returns:
+        TrelloList: The updated list object.
+    """
+    try:
+        logger.info(f"Moving list {list_id} (board={board_id}, pos={pos})")
+        result = await service.move_list(list_id, board_id, pos)
+        logger.info(f"Successfully moved list: {list_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to move list: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def archive_all_cards(ctx: Context, list_id: str) -> Dict:
+    """Archives all cards in a list.
+
+    Args:
+        list_id (str): The ID of the list whose cards to archive.
+
+    Returns:
+        Dict: The response from the archive operation.
+    """
+    try:
+        logger.info(f"Archiving all cards in list: {list_id}")
+        result = await service.archive_all_cards(list_id)
+        logger.info(f"Successfully archived all cards in list: {list_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to archive all cards: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+
+async def move_all_cards(
+    ctx: Context, list_id: str, board_id: str, dest_list_id: str
+) -> List[Dict]:
+    """Moves all cards in a list to another list.
+
+    Args:
+        list_id (str): The ID of the source list.
+        board_id (str): The ID of the board containing the destination list.
+        dest_list_id (str): The ID of the destination list.
+
+    Returns:
+        List[Dict]: The moved card objects.
+    """
+    try:
+        logger.info(f"Moving all cards from list {list_id} to list {dest_list_id}")
+        result = await service.move_all_cards(list_id, board_id, dest_list_id)
+        logger.info(f"Successfully moved all cards from list: {list_id}")
+        return result
+    except Exception as e:
+        error_msg = f"Failed to move all cards: {str(e)}"
         logger.error(error_msg)
         await ctx.error(error_msg)
         raise

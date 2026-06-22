@@ -2,7 +2,7 @@
 Service for managing Trello boards in MCP server.
 """
 
-from typing import List
+from typing import Any, Dict, List
 
 from server.models import TrelloBoard, TrelloLabel
 from server.utils.trello_api import TrelloClient
@@ -63,3 +63,51 @@ class BoardService:
         """
         response = await self.client.POST(f"/boards/{board_id}/labels", data=kwargs)
         return TrelloLabel(**response)
+
+    async def create_board(self, **kwargs) -> TrelloBoard:
+        """Creates a new board.
+
+        Args:
+            **kwargs: Board attributes (name and optional fields).
+
+        Returns:
+            TrelloBoard: The newly created board object.
+        """
+        response = await self.client.POST("/boards", data=kwargs)
+        return TrelloBoard(**response)
+
+    async def update_board(self, board_id: str, **kwargs) -> TrelloBoard:
+        """Updates a board's attributes.
+
+        Args:
+            board_id (str): The ID of the board to update.
+            **kwargs: The board attributes to update.
+
+        Returns:
+            TrelloBoard: The updated board object.
+        """
+        response = await self.client.PUT(f"/boards/{board_id}", data=kwargs)
+        return TrelloBoard(**response)
+
+    async def close_board(self, board_id: str) -> TrelloBoard:
+        """Closes (archives) a board.
+
+        Args:
+            board_id (str): The ID of the board to close.
+
+        Returns:
+            TrelloBoard: The closed board object.
+        """
+        response = await self.client.PUT(f"/boards/{board_id}", data={"closed": True})
+        return TrelloBoard(**response)
+
+    async def delete_board(self, board_id: str) -> Dict[str, Any]:
+        """Permanently deletes a board.
+
+        Args:
+            board_id (str): The ID of the board to delete.
+
+        Returns:
+            Dict[str, Any]: The response from the delete operation.
+        """
+        return await self.client.DELETE(f"/boards/{board_id}")

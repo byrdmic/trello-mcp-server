@@ -249,18 +249,34 @@ if __name__ == "__main__":
 
 ## Capabilities
 
-| Operation | Board | List | Card | Checklist | Checklist Item |
-|-----------|-------|------|------|-----------|----------------|
-| Read      | ✅    | ✅    | ✅   | ✅        | ✅              |
-| Write     | ❌    | ✅    | ✅   | ✅        | ✅              |
-| Update    | ❌    | ✅    | ✅   | ✅        | ✅              |
-| Delete    | ❌    | ✅    | ✅   | ✅        | ✅              |
+| Area              | Read | Create | Update | Delete |
+|-------------------|------|--------|--------|--------|
+| Boards            | ✅   | ✅     | ✅     | ✅     |
+| Lists             | ✅   | ✅     | ✅     | ✅ (archive) |
+| Cards             | ✅   | ✅     | ✅     | ✅     |
+| Checklists        | ✅   | ✅     | ✅     | ✅     |
+| Checklist items   | ✅   | ✅     | ✅     | ✅     |
+| Comments          | ✅   | ✅     | ✅     | ✅     |
+| Labels            | ✅   | ✅     | ✅     | ✅     |
+| Card members      | ✅   | ✅ (add) | —    | ✅ (remove) |
+| Attachments       | ✅   | ✅ (URL) | —    | ✅     |
+| Custom fields     | ✅   | —      | ✅ (set value) | — |
+| Webhooks          | ✅   | ✅     | —      | ✅     |
+| Organizations     | ✅   | —      | —      | —      |
+| Members           | ✅   | —      | —      | —      |
+| Notifications     | ✅   | —      | ✅ (read/unread) | — |
+| Search            | ✅   | —      | —      | —      |
 
 ### Detailed Capabilities
 
 #### Board Operations
 - ✅ Read all boards
 - ✅ Read specific board details
+- ✅ Read board labels / add a label to a board
+- ✅ Create a board
+- ✅ Update a board's attributes
+- ✅ Close (archive) a board
+- ⚠️ Delete a board (irreversible — removes the board and all of its lists/cards)
 
 #### List Operations
 - ✅ Read all lists in a board
@@ -268,6 +284,9 @@ if __name__ == "__main__":
 - ✅ Create new lists
 - ✅ Update list name
 - ✅ Archive (delete) lists
+- ✅ Move a list (to another board and/or position)
+- ✅ Archive all cards in a list
+- ✅ Move all cards in a list to another list
 
 #### Card Operations
 - ✅ Read all cards in a list
@@ -275,6 +294,12 @@ if __name__ == "__main__":
 - ✅ Create new cards
 - ✅ Update card attributes
 - ✅ Delete cards
+- ✅ Set/clear due date and set due complete
+- ✅ Move a card (list + position)
+- ✅ Archive / unarchive a card
+- ✅ Set a card cover (color or attachment)
+- ✅ Get a card's action history
+- ✅ Add (URL), list, get, and remove attachments — note: only URL-based attachments are supported; local file upload is not
 
 #### Checklist Operations
 - ✅ Get a specific checklist
@@ -285,6 +310,74 @@ if __name__ == "__main__":
 - ✅ Add checkitem to checklist
 - ✅ Update checkitem
 - ✅ Delete checkitem
+
+#### Comment Operations
+- ✅ List a card's comments
+- ✅ Add a comment to a card
+- ✅ Update a comment
+- ⚠️ Delete a comment (irreversible)
+
+#### Member Operations
+- ✅ Get the authenticated member (`get_me`)
+- ✅ Get a member by ID or username
+- ✅ Get a board's members
+- ✅ Add / remove a member on a card
+
+#### Label Operations
+- ✅ Update a board label
+- ⚠️ Delete a board label (irreversible — removes it from every card on the board)
+- ✅ Add / remove a label on a card
+- ✅ Set the full set of labels on a card
+
+#### Search
+- ✅ Search across cards, boards, members, and organizations
+- ✅ Search for members
+
+#### Custom Field Operations
+- ✅ Get a board's custom field definitions
+- ✅ Get a card's custom field values
+- ✅ Set (or clear) a card's custom field value
+
+#### Webhook Operations
+- ✅ Create a webhook (note: `callbackURL` must be publicly reachable; Trello validates it on creation)
+- ✅ List webhooks for the configured token
+- ✅ Get a specific webhook
+- ⚠️ Delete a webhook (irreversible)
+
+#### Organization (Workspace) Operations
+- ✅ List a member's workspaces
+- ✅ Get a workspace by ID
+
+#### Notification Operations
+- ✅ List the authenticated member's notifications
+- ✅ Get a specific notification
+- ✅ Mark a notification read / unread
+
+### Available Tools
+
+**Boards:** `get_board`, `get_boards`, `get_board_labels`, `create_board_label`, `create_board`, `update_board`, `close_board`, `delete_board`
+
+**Lists:** `get_list`, `get_lists`, `create_list`, `update_list`, `delete_list`, `move_list`, `archive_all_cards`, `move_all_cards`
+
+**Cards:** `get_card`, `get_cards`, `create_card`, `update_card`, `delete_card`, `set_card_due`, `set_card_due_complete`, `move_card`, `archive_card`, `unarchive_card`, `set_card_cover`, `get_card_actions`, `add_attachment`, `get_attachments`, `get_attachment`, `delete_attachment`
+
+**Checklists:** `get_checklist`, `get_card_checklists`, `create_checklist`, `update_checklist`, `delete_checklist`, `add_checkitem`, `update_checkitem`, `delete_checkitem`
+
+**Comments:** `get_comments`, `add_comment`, `update_comment`, `delete_comment`
+
+**Members:** `get_me`, `get_member`, `get_board_members`, `add_card_member`, `remove_card_member`
+
+**Labels:** `update_label`, `delete_label`, `add_card_label`, `remove_card_label`, `set_card_labels`
+
+**Search:** `search`, `search_members`
+
+**Custom Fields:** `get_board_custom_fields`, `get_card_custom_field_items`, `set_card_custom_field`
+
+**Webhooks:** `create_webhook`, `get_webhooks`, `get_webhook`, `delete_webhook`
+
+**Organizations:** `get_organizations`, `get_organization`
+
+**Notifications:** `get_notifications`, `get_notification`, `mark_notification_read`
 
 ## Usage
 

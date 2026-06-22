@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from server.models import TrelloList
 from server.utils.trello_api import TrelloClient
@@ -80,3 +80,53 @@ class ListService:
             f"/lists/{list_id}/closed", data={"value": "true"}
         )
         return TrelloList(**response)
+
+    async def move_list(
+        self, list_id: str, board_id: str | None = None, pos: str | None = None
+    ) -> TrelloList:
+        """Moves a list to another board and/or changes its position.
+
+        Args:
+            list_id (str): The ID of the list to move.
+            board_id (str | None): The ID of the destination board (optional).
+            pos (str | None): The new position ("top", "bottom", or a number) (optional).
+
+        Returns:
+            TrelloList: The updated list object.
+        """
+        data = {}
+        if board_id is not None:
+            data["idBoard"] = board_id
+        if pos is not None:
+            data["pos"] = pos
+        response = await self.client.PUT(f"/lists/{list_id}", data=data)
+        return TrelloList(**response)
+
+    async def archive_all_cards(self, list_id: str) -> Dict:
+        """Archives all cards in a list.
+
+        Args:
+            list_id (str): The ID of the list whose cards to archive.
+
+        Returns:
+            Dict: The response from the archive operation.
+        """
+        return await self.client.POST(f"/lists/{list_id}/archiveAllCards")
+
+    async def move_all_cards(
+        self, list_id: str, board_id: str, dest_list_id: str
+    ) -> List[Dict]:
+        """Moves all cards in a list to another list.
+
+        Args:
+            list_id (str): The ID of the source list.
+            board_id (str): The ID of the board containing the destination list.
+            dest_list_id (str): The ID of the destination list.
+
+        Returns:
+            List[Dict]: The moved card objects.
+        """
+        return await self.client.POST(
+            f"/lists/{list_id}/moveAllCards",
+            data={"idBoard": board_id, "idList": dest_list_id},
+        )

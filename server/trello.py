@@ -36,29 +36,41 @@ def trello_help() -> str:
     return """
     Available Trello Operations:
     1. Board Operations:
-       - Get a specific board
-       - List all boards
-       - Get board labels
-       - Add label to a board
+       - Get a specific board / list all boards
+       - Get board labels / add a label to a board
+       - Create, update, close (archive), or delete a board
     2. List Operations:
-       - Get a specific list
-       - List all lists in a board
-       - Create a new list
-       - Update a list's name
-       - Archive a list
+       - Get a specific list / list all lists in a board
+       - Create, update (rename), or archive a list
+       - Move a list / archive all cards in a list / move all cards to another list
     3. Card Operations:
-       - Get a specific card
-       - List all cards in a list
-       - Create a new card
-       - Update a card's attributes
-       - Delete a card
+       - Get a specific card / list all cards in a list
+       - Create, update, or delete a card
+       - Set/clear due date, set due complete, move, archive/unarchive a card
+       - Set a card cover / get a card's action history
+       - Add (URL), list, get, or remove card attachments
     4. Checklist Operations:
-       - Get a specific checklist
-       - List all checklists in a card
-       - Create a new checklist
-       - Update a checklist
-       - Delete a checklist
-       - Add checkitem to checklist
-       - Update checkitem
-       - Delete checkitem
+       - Get a checklist / list checklists in a card
+       - Create, update, or delete a checklist
+       - Add, update, or delete a checkitem
+    5. Comment Operations:
+       - List, add, update, or delete card comments
+    6. Member Operations:
+       - Get the authenticated member / get a member / get board members
+       - Add or remove a member on a card
+    7. Label Operations:
+       - Update or delete a board label
+       - Add, remove, or set the labels on a card
+    8. Search:
+       - Search across cards, boards, members, and organizations
+       - Search for members
+    9. Custom Fields:
+       - Get a board's custom fields / a card's custom field values
+       - Set a card's custom field value
+    10. Webhooks:
+       - Create, list, get, or delete webhooks
+    11. Organizations (Workspaces):
+       - List a member's workspaces / get a workspace
+    12. Notifications:
+       - List notifications / get a notification / mark read or unread
     """
